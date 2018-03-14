@@ -93,7 +93,8 @@ bool ImageProcessor::loadParameters() {
   R_cam0_imu = R_imu_cam0.t();
   t_cam0_imu = -R_imu_cam0.t() * t_imu_cam0;
 
-  cv::Mat     T_imu_cam1 = utils::getTransformCV(nh, "cam1/T_cam_imu");
+  cv::Mat T_cam0_cam1 = utils::getTransformCV(nh, "cam1/T_cn_cnm1");
+  cv::Mat T_imu_cam1 = T_cam0_cam1 * T_imu_cam0;
   cv::Matx33d R_imu_cam1(T_imu_cam1(cv::Rect(0,0,3,3)));
   cv::Vec3d   t_imu_cam1 = T_imu_cam1(cv::Rect(3,0,1,3));
   R_cam1_imu = R_imu_cam1.t();
@@ -237,7 +238,7 @@ void ImageProcessor::stereoCallback(
     // Track the feature in the previous image.
     ros::Time start_time = ros::Time::now();
     trackFeatures();
-    //ROS_INFO("Tracking time: %f",
+    //ROS_INFO("Tracking time: %f",  
     //    (ros::Time::now()-start_time).toSec());
 
     // Add new features into the current image.

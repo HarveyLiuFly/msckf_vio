@@ -3,6 +3,10 @@ project(msckf_vio)
 
 add_compile_options(-std=c++11)
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif(NOT CMAKE_BUILD_TYPE)
+
 # Modify cmake module path if new .cmake files are required
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -30,8 +34,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(Cholmod REQUIRED)
-find_package(SPQR REQUIRED)
+find_package(SuiteSparse REQUIRED)
 
 ##################
 ## ROS messages ##
@@ -60,7 +63,7 @@ catkin_package(
     eigen_conversions tf_conversions random_numbers message_runtime
     image_transport cv_bridge message_filters pcl_conversions
     pcl_ros std_srvs
-  DEPENDS Boost EIGEN3 OpenCV CHOLMOD SPQR
+  DEPENDS Boost EIGEN3 OpenCV SUITESPARSE
 )
 
 ###########
@@ -73,36 +76,7 @@ include_directories(
   ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
-  ${CHOLMOD_INCLUDES}
-  ${SPQR_INCLUDES}
-)
-
-# Msckf Vio
-add_library(msckf_vio
-  src/msckf_vio.cpp
-  src/utils.cpp
-)
-add_dependencies(msckf_vio
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(msckf_vio
-  ${catkin_LIBRARIES}
-  ${CHOLMOD_LIBRARIES}
-  ${SPQR_LIBRARIES}
-)
-
-# Msckf Vio nodelet
-add_library(msckf_vio_nodelet
-  src/msckf_vio_nodelet.cpp
-)
-add_dependencies(msckf_vio_nodelet
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(msckf_vio_nodelet
-  msckf_vio
-  ${catkin_LIBRARIES}
+  ${SUITESPARSE_INCLUDE_DIRS}
 )
 
 # Image processor
@@ -131,6 +105,68 @@ target_link_libraries(image_processor_nodelet
   image_processor
   ${catkin_LIBRARIES}
 )
+
+# Msckf Vio
+add_library(msckf_vio
+  src/msckf_vio.cpp
+  src/siekf_vio.cpp
+  src/sukflg_vio.cpp
+  src/utils.cpp
+)
+add_dependencies(msckf_vio
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(msckf_vio
+  ${catkin_LIBRARIES}
+  ${SUITESPARSE_LIBRARIES}
+)
+
+# Msckf Vio nodelet
+add_library(msckf_vio_nodelet
+  src/msckf_vio_nodelet.cpp
+)
+
+add_dependencies(msckf_vio_nodelet
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(msckf_vio_nodelet
+  msckf_vio
+  ${catkin_LIBRARIES}
+)
+
+# Siekf Vio nodelet
+add_library(siekf_vio_nodelet
+  src/siekf_vio_nodelet.cpp
+)
+
+add_dependencies(siekf_vio_nodelet
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(siekf_vio_nodelet
+  msckf_vio
+  ${catkin_LIBRARIES}
+)
+
+
+
+# Sukflg Vio nodelet
+add_library(sukflg_vio_nodelet
+  src/sukflg_vio_nodelet.cpp
+)
+
+add_dependencies(sukflg_vio_nodelet
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(sukflg_vio_nodelet
+  msckf_vio
+  ${catkin_LIBRARIES}
+)
+
+
 
 #############
 ## Install ##

@@ -18,7 +18,7 @@
 
 #include <msckf_vio/cam_state.h>
 #include <msckf_vio/feature.hpp>
-
+#include <msckf_vio/math_utils.hpp>
 
 using namespace std;
 using namespace Eigen;
@@ -115,6 +115,23 @@ TEST(FeatureInitializeTest, sphereDistribution) {
   cout << "estimated position: " << feature_object.position.transpose() << endl;
   Eigen::Vector3d error = feature_object.position - feature;
   EXPECT_NEAR(error.norm(), 0, 0.05);
+}
+
+TEST(FeatureInitializeTest, expSO3) {
+  Vector4d q;
+  Vector3d omega(0.02, 0.01, 0.07);
+
+  q = smallAngleQuaternion(omega);
+  const double theta = std::sqrt(omega(1)*omega(1)+omega(2)*omega(2)+omega(3)*omega(3));
+  Matrix3d Omega = skewSymmetric(omega);
+  const double A = std::sin(theta)/theta;
+  const double B = (1-std::cos(theta))/(theta*theta);
+  Matrix3d R = Matrix3d::Identity() + A*Omega + B*Omega*Omega;
+
+  Matrix3d zero_matrix = quaternionToRotation(q) - R;
+
+  EXPECT_NEAR(zero_matrix.sum(), 0.0, 1e-10);
+  return;
 }
 
 int main(int argc, char** argv) {

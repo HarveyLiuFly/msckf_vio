@@ -19,7 +19,7 @@ namespace msckf_vio {
  *  w   ->  [  0 -w3  w2]
  *          [ w3   0 -w1]
  *          [-w2  w1   0]
- */
+ */ 
 inline Eigen::Matrix3d skewSymmetric(const Eigen::Vector3d& w) {
   Eigen::Matrix3d w_hat;
   w_hat(0, 0) = 0;
@@ -28,7 +28,7 @@ inline Eigen::Matrix3d skewSymmetric(const Eigen::Vector3d& w) {
   w_hat(1, 0) = w(2);
   w_hat(1, 1) = 0;
   w_hat(1, 2) = -w(0);
-  w_hat(2, 0) = -w(1);
+  w_hat(2, 0) = -w(1); 
   w_hat(2, 1) = w(0);
   w_hat(2, 2) = 0;
   return w_hat;
@@ -156,6 +156,40 @@ inline Eigen::Vector4d rotationToQuaternion(
   if (q(3) < 0) q = -q;
   quaternionNormalize(q);
   return q;
+}
+
+/*
+/*
+ * @brief Compute the SE_(3) exponential
+ */
+inline Eigen::VectorXd expSE_3(const Eigen::Vector3d xi_omega,
+             const Eigen::VectorXd xi_x) {
+    const double theta = std::sqrt(xi_omega.squaredNorm());
+    Eigen::Matrix3d Omega_1 = skewSymmetric(xi_omega);
+    Eigen::Matrix3d Omega_2 = Omega_1*Omega_1;
+    if (theta < 0.000001) {
+      return xi_x + 1/2*Omega_1*xi_x + 1/(2*3)*Omega_2*xi_x;
+    } else {
+      const double A = std::sin(theta)/theta;
+      const double B = (1-std::cos(theta))/(theta*theta);
+      const double C = (1-A)/(theta*theta);
+      const Eigen::Matrix3d V = Eigen::Matrix3d::Identity() + B*Omega_1 + C*Omega_2;
+    return V*xi_x;
+    }
+}
+
+inline Eigen::Matrix3d expSO_3(const Eigen::Vector3d xi_omega) {
+    const double theta = std::sqrt(xi_omega.squaredNorm());
+    Eigen::Matrix3d Omega_1 = skewSymmetric(xi_omega);
+    Eigen::Matrix3d Omega_2 = Omega_1*Omega_1;
+    if (theta < 0.000001) {
+      return Eigen::Matrix3d::Identity() + 1/2*Omega_1 + 1/(2*3)*Omega_2;
+    } else {
+      const double A = std::sin(theta)/theta;
+      const double B = (1-std::cos(theta))/(theta*theta);
+      const Eigen::Matrix3d dR = Eigen::Matrix3d::Identity() + A*Omega_1 + B*Omega_2;
+    return dR;
+    }
 }
 
 } // end namespace msckf_vio

@@ -1,3 +1,14 @@
+<library path="lib/libimage_processor_nodelet">
+  <class name="msckf_vio/ImageProcessorNodelet"
+         type="msckf_vio::ImageProcessorNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Detect and track features in image sequence.
+    </description>
+  </class>
+</library>
+
+
 <library path="lib/libmsckf_vio_nodelet">
   <class name="msckf_vio/MsckfVioNodelet"
          type="msckf_vio::MsckfVioNodelet"
@@ -9,12 +20,24 @@
   </class>
 </library>
 
-<library path="lib/libimage_processor_nodelet">
-  <class name="msckf_vio/ImageProcessorNodelet"
-         type="msckf_vio::ImageProcessorNodelet"
+<library path="lib/libsiekf_vio_nodelet">
+  <class name="msckf_vio/SiekfVioNodelet"
+         type="msckf_vio::SiekfVioNodelet"
          base_class_type="nodelet::Nodelet">
     <description>
-      Detect and track features in image sequence.
+      Stereo Invariant Extened Kalman Filter
     </description>
   </class>
 </library>
+
+
+<library path="lib/libsukflg_vio_nodelet">
+  <class name="msckf_vio/SukflgVioNodelet"
+         type="msckf_vio::SukflgVioNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Stereo Unscented Kalman Filter on Lie Groups
+    </description>
+  </class>
+</library>
+
